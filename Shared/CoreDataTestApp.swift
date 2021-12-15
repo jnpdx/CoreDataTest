@@ -13,7 +13,7 @@ struct CoreDataTestApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(context: PersistenceController.shared.container.viewContext)
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }

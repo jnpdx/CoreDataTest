@@ -7,27 +7,179 @@
 
 import SwiftUI
 import CoreData
+import Combine
+
+class MetronomeItemStorage : NSObject, ObservableObject {
+    @Published var items : [MetronomeItem] = []
+    
+    @Published var totalTimeSum : Float = 0
+    
+    private let controller : NSFetchedResultsController<MetronomeItem>
+    var context : NSManagedObjectContext
+    
+    //private let sumController: NSFetchedResultsController<NSFetchRequestResult>
+    
+    private var subscriptions: Set<AnyCancellable> = []
+    
+    init(context: NSManagedObjectContext) {
+        self.context = context
+        let fetchRequest = MetronomeItem.fetchRequest()
+        let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp, ascending: true)
+        
+        //        let beginRange = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        //        let endRange = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        //
+        //        let predicate = NSPredicate(format: "timestamp > %@ && timestamp < %@", beginRange as NSDate, endRange as NSDate)
+        //        fetchRequest.predicate = predicate
+        fetchRequest.sortDescriptors = [sortByTimestamp]
+        controller = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                managedObjectContext: context,
+                                                sectionNameKeyPath: nil,
+                                                cacheName: nil)
+        
+        
+        //        sumController = NSFetchedResultsController(fetchRequest: sumRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        
+        super.init()
+        
+        controller.delegate = self
+        //sumController.delegate = self
+        
+        do {
+            try controller.performFetch()
+            self.newItems(items: controller.fetchedObjects ?? [])
+            
+            //            try sumController.performFetch()
+            //            let resultsMap = sumController.fetchedObjects
+            //            print(resultsMap)
+        } catch {
+            print(error)
+            fatalError()
+        }
+        
+        
+        NotificationCenter.default
+            .publisher(for: .NSPersistentStoreRemoteChange)
+            .sink { change in
+                print("Remote change!")
+                print(change)
+            }
+            .store(in: &subscriptions)
+    }
+    
+    func addItem() {
+        let newItem = MetronomeItem(context: context)
+        newItem.timestamp = Date()
+        newItem.metronomeTime = 5.0
+        
+        do {
+            try context.save()
+        } catch {
+            // Replace this implementation with code to handle the error appropriately.
+            // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+    }
+    
+    func deleteItems(offsets: IndexSet) {
+        withAnimation {
+            offsets.map { items[$0] }.forEach(context.delete)
+            
+            do {
+                try context.save()
+            } catch {
+                // Replace this implementation with code to handle the error appropriately.
+                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
+                let nsError = error as NSError
+                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
+        }
+    }
+    
+    var totalTime : Float {
+        items.reduce(0) { partialResult, item in
+            partialResult + item.metronomeTime
+        }
+    }
+    
+    var totalTimeInLast2Days : Float {
+        0.0
+    }
+}
+
+extension MetronomeItemStorage {
+    func doSumRequest() {
+        //sum request
+        let sumRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetronomeItem")
+        sumRequest.sortDescriptors = [.init(keyPath: \MetronomeItem.timestamp, ascending: true)]
+        sumRequest.resultType = .dictionaryResultType
+        let desc = NSExpressionDescription()
+        desc.name = "sum"
+        desc.expression = NSExpression(forFunction: "sum:", arguments: [NSExpression(forKeyPath: \MetronomeItem.metronomeTime)])
+        desc.expressionResultType = .floatAttributeType
+        sumRequest.propertiesToFetch = [desc]
+        do {
+            let results = try context.fetch(sumRequest)
+            print("RESULTS:")
+            print(results)
+            let resultMap = results[0] as! [String:Float]
+            self.totalTimeSum = resultMap["sum"] ?? 0
+        } catch {
+            print(error)
+            fatalError()
+        }
+    }
+    
+    func newItems(items: [MetronomeItem]) {
+        withAnimation {
+            self.items = items
+        }
+        print("New items!")
+        
+        self.doSumRequest()
+    }
+}
+
+extension MetronomeItemStorage : NSFetchedResultsControllerDelegate {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        guard let items = controller.fetchedObjects as? [MetronomeItem] else { return }
+        DispatchQueue.main.async {
+            self.newItems(items: items)
+        }
+    }
+}
+
+class ViewModel : ObservableObject {
+    @Published var metronomeItems : [MetronomeItem] = []
+}
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @StateObject private var viewModel : MetronomeItemStorage
+    
+    init(context: NSManagedObjectContext) {
+        _viewModel = StateObject(wrappedValue: MetronomeItemStorage(context: context))
+    }
+    
     var body: some View {
         NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+            VStack(alignment: .leading) {
+                List {
+                    ForEach(viewModel.items) { item in
+                        NavigationLink {
+                            Text("Item at \(item.timestamp ?? Date()) \(item.metronomeTime)")
+                        } label: {
+                            Text(item.timestamp ?? Date(), formatter: itemFormatter)
+                        }
                     }
+                    .onDelete(perform: viewModel.deleteItems)
                 }
-                .onDelete(perform: deleteItems)
+                Text("Total time: \(viewModel.totalTime)")
+                Text("Total time (sum): \(viewModel.totalTimeSum)")
+                Text("Total time in last 2 days: \(viewModel.totalTimeInLast2Days)")
             }
+            
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -35,43 +187,40 @@ struct ContentView: View {
                 }
 #endif
                 ToolbarItem {
-                    Button(action: addItem) {
+                    Button(action: viewModel.addItem) {
                         Label("Add Item", systemImage: "plus")
+                    }
+                }
+                
+                ToolbarItem {
+                    Button(action: {
+                        let yesterdayItem = MetronomeItem(context: viewContext)
+                        
+                        let calendar = Calendar.current
+                        
+                        let yesterday = calendar.date(byAdding: .day, value: -1, to: Date())
+                        
+                        yesterdayItem.timestamp = yesterday
+                        yesterdayItem.metronomeTime = 7.00
+                        
+                        let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: Date())
+                        
+                        let lastWeekItem = MetronomeItem(context: viewContext)
+                        lastWeekItem.timestamp = lastWeek
+                        lastWeekItem.metronomeTime = 22.0
+                        
+                        do {
+                            try viewContext.save()
+                        } catch {
+                            print(error)
+                            fatalError()
+                        }
+                    }) {
+                        Label("Add Fake Items", systemImage: "plus.circle")
                     }
                 }
             }
             Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
         }
     }
 }
@@ -82,9 +231,3 @@ private let itemFormatter: DateFormatter = {
     formatter.timeStyle = .medium
     return formatter
 }()
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-    }
-}
