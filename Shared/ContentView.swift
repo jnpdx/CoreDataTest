@@ -43,15 +43,10 @@ class MetronomeItemStorage : NSObject, ObservableObject {
         super.init()
         
         controller.delegate = self
-        //sumController.delegate = self
         
         do {
             try controller.performFetch()
             self.newItems(items: controller.fetchedObjects ?? [])
-            
-            //            try sumController.performFetch()
-            //            let resultsMap = sumController.fetchedObjects
-            //            print(resultsMap)
         } catch {
             print(error)
             fatalError()
@@ -85,7 +80,6 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     func deleteItems(offsets: IndexSet) {
         withAnimation {
             offsets.map { items[$0] }.forEach(context.delete)
-            
             do {
                 try context.save()
             } catch {
@@ -105,6 +99,29 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     
     var totalTimeInLast2Days : Float {
         0.0
+    }
+}
+
+extension MetronomeItemStorage {
+    var itemsByDay : [(dateKey: String, items: [MetronomeItem])] {
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MM-dd-YYYY"
+        
+        let calendar = Calendar.current
+        let curDate = Date()
+        
+        return (0..<7).reversed().map { day -> (dateKey: String, items: [MetronomeItem]) in
+            let dayStart = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 0 - day, to: curDate)!)
+            var components = DateComponents()
+            components.day = 1
+            components.second = -1
+            let dayEnd = calendar.date(byAdding: components, to: dayStart)!
+            
+            let key = dateFormatter.string(from: dayStart)
+            let dateItems = self.items.filter { ($0.timestamp ?? Date()) >= dayStart && ($0.timestamp ?? Date()) <= dayEnd }
+            return (dateKey: key, items: dateItems)
+        }
     }
 }
 
@@ -136,7 +153,7 @@ extension MetronomeItemStorage {
             self.items = items
         }
         print("New items!")
-        
+        print(itemsByDay.map(\.dateKey))
         self.doSumRequest()
     }
 }
@@ -166,14 +183,24 @@ struct ContentView: View {
         NavigationView {
             VStack(alignment: .leading) {
                 List {
-                    ForEach(viewModel.items) { item in
-                        NavigationLink {
-                            Text("Item at \(item.timestamp ?? Date()) \(item.metronomeTime)")
-                        } label: {
-                            Text(item.timestamp ?? Date(), formatter: itemFormatter)
+                    let itemsByDay = viewModel.itemsByDay
+                    ForEach(itemsByDay, id: \.dateKey) { item in
+                        Section(header: Text("\(item.dateKey)")) {
+                            ForEach(item.items) { value in
+                                Text(value.timestamp ?? Date(), formatter: itemFormatter)
+                            }
                         }
                     }
-                    .onDelete(perform: viewModel.deleteItems)
+//                    Section(header: Text("My section")) {
+//                        ForEach(viewModel.items) { item in
+//                            NavigationLink {
+//                                Text("Item at \(item.timestamp ?? Date()) \(item.metronomeTime)")
+//                            } label: {
+//                                Text(item.timestamp ?? Date(), formatter: itemFormatter)
+//                            }
+//                        }
+//                        .onDelete(perform: viewModel.deleteItems)
+//                    }
                 }
                 Text("Total time: \(viewModel.totalTime)")
                 Text("Total time (sum): \(viewModel.totalTimeSum)")
