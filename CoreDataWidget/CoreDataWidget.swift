@@ -27,7 +27,7 @@ struct WidgetDataProvider {
             print("RESULTS:")
             print(results)
             let resultMap = results[0] as! [String:Float]
-            return (resultMap["sum"] ?? 10.0) + 7
+            return (resultMap["sum"] ?? 10.0)
         } catch {
             print(error)
             fatalError()

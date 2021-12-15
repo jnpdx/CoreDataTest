@@ -33,17 +33,18 @@ struct PersistenceController {
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "CoreDataTest")
         //TODO: add back in -- needs to work with widget
-        //container.viewContext.automaticallyMergesChangesFromParent = true
-        
-        guard let description = container.persistentStoreDescriptions.first else {
-            fatalError("###\(#function): Failed to retrieve a persistent store description.")
-        }
-        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        container.viewContext.automaticallyMergesChangesFromParent = true
         
         let storeURL = URL.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest")
         let storeDescription = NSPersistentStoreDescription(url: storeURL)
-        container.persistentStoreDescriptions.append(storeDescription)
+        let cloudkitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.johnnastos.CoreDataTest")
+        storeDescription.cloudKitContainerOptions = cloudkitOptions
+
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        
+        
+        container.persistentStoreDescriptions = [storeDescription]
         print("StoreURL: ",storeURL)
 
         
