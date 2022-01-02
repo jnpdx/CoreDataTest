@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 import Combine
+import WidgetKit
 
 class MetronomeItemStorage : NSObject, ObservableObject {
     @Published var items : [MetronomeItem] = []
@@ -52,14 +53,27 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             fatalError()
         }
         
+        //TODO: Update widget in both cases
+        NotificationCenter.default
+            .publisher(for: NSManagedObjectContext.didSaveObjectsNotification)
+            .sink { change in
+                print("Save: --", change)
+                self.updateWidgets()
+            }
+            .store(in: &subscriptions)
         
         NotificationCenter.default
             .publisher(for: .NSPersistentStoreRemoteChange)
             .sink { change in
                 print("Remote change!")
                 print(change)
+                self.updateWidgets()
             }
             .store(in: &subscriptions)
+    }
+    
+    func updateWidgets() {
+        WidgetCenter.shared.reloadTimelines(ofKind: "CoreDataWidget")
     }
     
     func addItem() {
@@ -188,9 +202,13 @@ struct ContentView: View {
                     ForEach(itemsByDay, id: \.dateKey) { item in
                         Section(header: Text("\(item.dateKey)")) {
                             ForEach(item.items) { value in
-                                VStack {
-                                    Text(value.timestamp ?? Date(), formatter: itemFormatter)
-                                    Text("\(value.metronomeTime)")
+                                NavigationLink {
+                                    DetailView(item: value)
+                                } label: {
+                                    VStack {
+                                        Text(value.timestamp ?? Date(), formatter: itemFormatter)
+                                        Text("\(value.metronomeTime)")
+                                    }
                                 }
                             }
                         }
@@ -262,3 +280,34 @@ private let itemFormatter: DateFormatter = {
     formatter.timeStyle = .medium
     return formatter
 }()
+
+struct DetailView : View {
+    @ObservedObject var item : MetronomeItem
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.presentationMode) private var presentationMode
+    
+    var body: some View {
+        VStack {
+            Text("Metronome item")
+            Text(item.timestamp ?? Date(), formatter: itemFormatter)
+            Text("Time: \(item.metronomeTime)")
+            Button {
+                presentationMode.wrappedValue.dismiss()
+                viewContext.delete(item)
+                do {
+                    try viewContext.save()
+                } catch {
+                    print("Error saving: ", error)
+                }
+            } label: {
+                Label {
+                    Text("Delete")
+                } icon: {
+                    Image(systemName: "trash")
+                }
+
+            }
+
+        }
+    }
+}
