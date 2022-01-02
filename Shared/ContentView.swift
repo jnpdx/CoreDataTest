@@ -98,6 +98,7 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     }
     
     var totalTimeInLast2Days : Float {
+        //TODO: calculate
         0.0
     }
 }
@@ -187,7 +188,10 @@ struct ContentView: View {
                     ForEach(itemsByDay, id: \.dateKey) { item in
                         Section(header: Text("\(item.dateKey)")) {
                             ForEach(item.items) { value in
-                                Text(value.timestamp ?? Date(), formatter: itemFormatter)
+                                VStack {
+                                    Text(value.timestamp ?? Date(), formatter: itemFormatter)
+                                    Text("\(value.metronomeTime)")
+                                }
                             }
                         }
                     }
