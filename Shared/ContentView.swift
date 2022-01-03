@@ -14,6 +14,12 @@ import WidgetKit
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var viewModel : MetronomeItemStorage
+    @State private var filterType : FilterType = .thisDevice
+    
+    private enum FilterType : String, CaseIterable {
+        case thisDevice
+        case allDevices
+    }
     
     init(context: NSManagedObjectContext) {
         _viewModel = StateObject(wrappedValue: MetronomeItemStorage(context: context))
@@ -22,8 +28,16 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
+                Picker(selection: $filterType) {
+                    ForEach(FilterType.allCases, id: \.self) {
+                        Text($0.rawValue)
+                    }
+                } label: {
+                    Text("Type")
+                }.pickerStyle(.segmented)
+
                 List {
-                    let itemsByDay = viewModel.itemsByDay
+                    let itemsByDay = viewModel.itemsByDay(onlyThisDevice: filterType == .thisDevice)
                     ForEach(itemsByDay, id: \.dateKey) { item in
                         Section(header: Text("\(item.dateKey)")) {
                             ForEach(item.items) { value in
@@ -114,6 +128,7 @@ struct DetailView : View {
     var body: some View {
         VStack {
             Text("Metronome item")
+            Text(item.creator?.uuidString ?? "No ID")
             Text(item.timestamp ?? Date(), formatter: itemFormatter)
             Text("Time: \(item.metronomeTime)")
             Button {
@@ -132,7 +147,11 @@ struct DetailView : View {
                 }
 
             }
-
+            Slider(value: $item.metronomeTime, in: 0...40, step: 1) {
+                Text("Metronome time")
+            }.onChange(of: item.metronomeTime) { _ in
+                try? viewContext.save()
+            }
         }
     }
 }

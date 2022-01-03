@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="20E232" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
     <entity name="MetronomeItem" representedClassName="MetronomeItem" syncable="YES" codeGenerationType="class">
+        <attribute name="creator" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="metronomeTime" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="timestamp" attributeType="Date" defaultDateTimeInterval="661244820" usesScalarValueType="NO"/>
     </entity>
+    <configuration name="Cloud" usedWithCloudKit="YES">
+        <memberEntity name="MetronomeItem"/>
+    </configuration>
+    <configuration name="Local">
+        <memberEntity name="MetronomeItem"/>
+    </configuration>
     <elements>
-        <element name="MetronomeItem" positionX="-63" positionY="-18" width="128" height="59"/>
+        <element name="MetronomeItem" positionX="-63" positionY="-18" width="128" height="74"/>
     </elements>
 </model>

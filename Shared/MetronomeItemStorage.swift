@@ -20,6 +20,8 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     
     private var subscriptions: Set<AnyCancellable> = []
     
+    @AppStorage("ItemCreatorID") private var deviceID : String = ""
+    
     init(context: NSManagedObjectContext) {
         self.context = context
         let fetchRequest = MetronomeItem.fetchRequest()
@@ -42,6 +44,15 @@ class MetronomeItemStorage : NSObject, ObservableObject {
                                                 cacheName: nil)
         
         super.init()
+        
+        if deviceID == "" {
+            //create a unique ID and store it
+            let createdID = UUID().uuidString
+            deviceID = createdID
+            print("Storing ID: ", createdID)
+        } else {
+            print("Retrieved ID: ", deviceID)
+        }
         
         controller.delegate = self
         
@@ -71,6 +82,13 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             .store(in: &subscriptions)
     }
     
+    func filteredItems(onlyThisDevice: Bool) -> [MetronomeItem] {
+        return onlyThisDevice ?
+            items.filter { $0.creator?.uuidString == deviceID }
+            :
+            items
+    }
+    
     func updateWidgets() {
         WidgetCenter.shared.reloadTimelines(ofKind: "CoreDataWidget")
     }
@@ -79,6 +97,7 @@ class MetronomeItemStorage : NSObject, ObservableObject {
         let newItem = MetronomeItem(context: context)
         newItem.timestamp = Date()
         newItem.metronomeTime = 5.0
+        newItem.creator = UUID(uuidString: deviceID)
         
         do {
             try context.save()
@@ -113,10 +132,10 @@ class MetronomeItemStorage : NSObject, ObservableObject {
 }
 
 extension MetronomeItemStorage {
-    var itemsByDay : [(dateKey: String, items: [MetronomeItem])] {
-        
+    func itemsByDay(onlyThisDevice: Bool) -> [(dateKey: String, items: [MetronomeItem])] {
+        let filteredItems = filteredItems(onlyThisDevice: onlyThisDevice)
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM-dd-YYYY"
+        dateFormatter.dateFormat = "MM-dd-yyyy"
         
         let calendar = Calendar.current
         let curDate = Date()
@@ -129,7 +148,7 @@ extension MetronomeItemStorage {
             let dayEnd = calendar.date(byAdding: components, to: dayStart)!
             
             let key = dateFormatter.string(from: dayStart)
-            let dateItems = self.items.filter { ($0.timestamp ?? Date()) >= dayStart && ($0.timestamp ?? Date()) <= dayEnd }
+            let dateItems = filteredItems.filter { ($0.timestamp ?? Date()) >= dayStart && ($0.timestamp ?? Date()) <= dayEnd }
             return (dateKey: key, items: dateItems)
         }
     }
@@ -150,8 +169,9 @@ extension MetronomeItemStorage {
             let results = try context.fetch(sumRequest)
             print("RESULTS:")
             print(results)
-            let resultMap = results[0] as! [String:Float]
-            self.totalTimeSum = resultMap["sum"] ?? 0
+            if let resultMap = results[0] as? [String:NSNumber] {
+                self.totalTimeSum = resultMap["sum"]?.floatValue ?? 0
+            }
         } catch {
             print(error)
             fatalError()
@@ -162,8 +182,6 @@ extension MetronomeItemStorage {
         withAnimation {
             self.items = items
         }
-        print("New items!")
-        print(itemsByDay.map(\.dateKey))
         self.doSumRequest()
     }
 }

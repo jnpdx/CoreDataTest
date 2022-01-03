@@ -11,21 +11,39 @@ struct PersistenceController {
     static let shared = PersistenceController()
     let container: NSPersistentCloudKitContainer
     
+    func generateCloudStoreDescription() -> NSPersistentStoreDescription {
+        let storeURL = Self.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest-Cloud")
+        print("StoreURL: ",storeURL)
+        let storeDescription = NSPersistentStoreDescription(url: storeURL)
+        storeDescription.configuration = "Cloud"
+        let cloudkitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.johnnastos.CoreDataTest")
+        storeDescription.cloudKitContainerOptions = cloudkitOptions
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        return storeDescription
+    }
+    
+    ///Probably don't use this, as we can't share entities between two stores
+    func generateLocalStoreDescription() -> NSPersistentStoreDescription {
+        let storeURL = Self.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest-Local")
+        print("StoreURL (local): ",storeURL)
+        let storeDescription = NSPersistentStoreDescription(url: storeURL)
+        storeDescription.configuration = "Local"
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        return storeDescription
+    }
+    
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "CoreDataTest")
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        let storeURL = URL.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest")
-        let storeDescription = NSPersistentStoreDescription(url: storeURL)
-        let cloudkitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.johnnastos.CoreDataTest")
-        storeDescription.cloudKitContainerOptions = cloudkitOptions
-
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        let cloudDescription = generateCloudStoreDescription()
+        //let localDescription = generateLocalStoreDescription()
         
-        
-        container.persistentStoreDescriptions = [storeDescription]
-        print("StoreURL: ",storeURL)
+        container.persistentStoreDescriptions = [
+            cloudDescription,
+            //localDescription
+        ]
 
 #if DEBUG
         do {
@@ -73,7 +91,7 @@ extension PersistenceController {
     }()
 }
 
-public extension URL {
+extension PersistenceController {
     /// Returns a URL for the given app group and database pointing to the sqlite database.
     static func storeURL(for appGroup: String, databaseName: String) -> URL {
         guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
