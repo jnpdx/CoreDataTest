@@ -27,11 +27,16 @@ class MetronomeItemStorage : NSObject, ObservableObject {
         let fetchRequest = MetronomeItem.fetchRequest()
         let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp, ascending: true)
         
-        //        let beginRange = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
-        //        let endRange = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
-        //
-        //        let predicate = NSPredicate(format: "timestamp > %@ && timestamp < %@", beginRange as NSDate, endRange as NSDate)
-        //        fetchRequest.predicate = predicate
+        let calendar = Calendar.current
+        
+        let beginRange =
+            calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!)
+
+        let endRange =
+            calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: Date())!)
+        
+        let predicate = NSPredicate(format: "timestamp > %@ && timestamp < %@", beginRange as NSDate, endRange as NSDate)
+        fetchRequest.predicate = predicate
         fetchRequest.sortDescriptors = [sortByTimestamp]
         controller = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                 managedObjectContext: context,
@@ -53,7 +58,6 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             fatalError()
         }
         
-        //TODO: Update widget in both cases
         NotificationCenter.default
             .publisher(for: NSManagedObjectContext.didSaveObjectsNotification)
             .sink { change in
