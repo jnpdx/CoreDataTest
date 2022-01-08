@@ -10,24 +10,32 @@ import CoreData
 import Combine
 import WidgetKit
 
-
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @StateObject private var viewModel : MetronomeItemStorage
-    @State private var filterType : FilterType = .thisDevice
+    @ObservedObject private var viewModel : MetronomeItemStorage
+    @ObservedObject var persistenceController : PersistenceManager
+    @State private var filterType : FilterType = .allDevices
     
     private enum FilterType : String, CaseIterable {
         case thisDevice
         case allDevices
     }
     
-    init(context: NSManagedObjectContext) {
-        _viewModel = StateObject(wrappedValue: MetronomeItemStorage(context: context))
+    var viewContext : NSManagedObjectContext {
+        persistenceController.persistentContainer.viewContext
+    }
+    
+    init(persistenceController: PersistenceManager) {
+        print("Init ContentView")
+        _persistenceController = ObservedObject(wrappedValue: persistenceController)
+        _viewModel = ObservedObject(wrappedValue: MetronomeItemStorage(context: persistenceController.persistentContainer.viewContext))
     }
     
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
+                Toggle(isOn: $persistenceController.cloudEnabled) {
+                    Text("Cloud enabled")
+                }
                 Picker(selection: $filterType) {
                     ForEach(FilterType.allCases, id: \.self) {
                         Text($0.rawValue)
@@ -109,7 +117,7 @@ struct ContentView: View {
                 }
             }
             Text("Select an item")
-        }
+        }.environment(\.managedObjectContext, persistenceController.persistentContainer.viewContext)
     }
 }
 
@@ -147,7 +155,7 @@ struct DetailView : View {
                 }
 
             }
-            Slider(value: $item.metronomeTime, in: 0...40, step: 1) {
+            Slider(value: $item.metronomeTime, in: 0...40, step: 10) {
                 Text("Metronome time")
             }.onChange(of: item.metronomeTime) { _ in
                 try? viewContext.save()

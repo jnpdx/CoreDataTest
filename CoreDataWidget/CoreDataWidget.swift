@@ -11,7 +11,7 @@ import CoreData
 
 struct WidgetDataProvider {
     func getWidgetData() -> Float {
-        let context = PersistenceController.shared.container.viewContext
+        let context = _PersistenceController().container.viewContext
         
         //sum request
         let sumRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetronomeItem")

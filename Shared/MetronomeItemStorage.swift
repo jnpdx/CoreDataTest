@@ -23,6 +23,8 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     @AppStorage("ItemCreatorID") private var deviceID : String = ""
     
     init(context: NSManagedObjectContext) {
+        print("Creating storage")
+        
         self.context = context
         let fetchRequest = MetronomeItem.fetchRequest()
         let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp, ascending: true)
@@ -64,22 +66,29 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             fatalError()
         }
         
-        NotificationCenter.default
-            .publisher(for: NSManagedObjectContext.didSaveObjectsNotification)
-            .sink { change in
-                print("Save: --", change)
-                self.updateWidgets()
-            }
-            .store(in: &subscriptions)
+        $totalTimeSum.sink { _ in
+            self.updateWidgets()
+        }
+        .store(in: &subscriptions)
         
-        NotificationCenter.default
-            .publisher(for: .NSPersistentStoreRemoteChange)
-            .sink { change in
-                print("Remote change!")
-                print(change)
-                self.updateWidgets()
-            }
-            .store(in: &subscriptions)
+//        NotificationCenter.default
+//            .publisher(for: NSManagedObjectContext.didSaveObjectsNotification)
+//            .sink { change in
+//                print("Save: --", change)
+//                self.updateWidgets()
+//            }
+//            .store(in: &subscriptions)
+//
+//        NotificationCenter.default
+//            .publisher(for: .NSPersistentStoreRemoteChange)
+//            .sink { change in
+//                if let historyToken = change.userInfo?["historyToken"] as? NSPersistentHistoryToken {
+//                    self.historyToken = historyToken.
+//                    print(change.userInfo!)
+//                    self.updateWidgets()
+//                }
+//            }
+//            .store(in: &subscriptions)
     }
     
     func filteredItems(onlyThisDevice: Bool) -> [MetronomeItem] {
@@ -90,10 +99,12 @@ class MetronomeItemStorage : NSObject, ObservableObject {
     }
     
     func updateWidgets() {
+        print("Updating widget...")
         WidgetCenter.shared.reloadTimelines(ofKind: "CoreDataWidget")
     }
     
     func addItem() {
+        print("Adding item in:",context)
         let newItem = MetronomeItem(context: context)
         newItem.timestamp = Date()
         newItem.metronomeTime = 5.0

@@ -9,12 +9,11 @@ import SwiftUI
 
 @main
 struct CoreDataTestApp: App {
-    let persistenceController = PersistenceController.shared
+    @StateObject var persistenceController = PersistenceManager()
 
     var body: some Scene {
         WindowGroup {
-            ContentView(context: PersistenceController.shared.container.viewContext)
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            ContentView(persistenceController: persistenceController)
         }
     }
 }
