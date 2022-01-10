@@ -15,11 +15,6 @@ struct ContentView: View {
     @ObservedObject var persistenceController : PersistenceManager
     @State private var filterType : FilterType = .allDevices
     
-    private enum FilterType : String, CaseIterable {
-        case thisDevice
-        case allDevices
-    }
-    
     var viewContext : NSManagedObjectContext {
         persistenceController.persistentContainer.viewContext
     }
@@ -27,107 +22,62 @@ struct ContentView: View {
     init(persistenceController: PersistenceManager) {
         print("Init ContentView")
         _persistenceController = ObservedObject(wrappedValue: persistenceController)
-        _viewModel = ObservedObject(wrappedValue: MetronomeItemStorage(context: persistenceController.persistentContainer.viewContext))
+        _viewModel = ObservedObject(wrappedValue:
+                                        MetronomeItemStorage(context: persistenceController.persistentContainer.viewContext)
+        )
     }
     
     var body: some View {
         NavigationView {
             VStack(alignment: .leading) {
-                Toggle(isOn: $persistenceController.cloudEnabled) {
-                    Text("Cloud enabled")
-                }
-                Picker(selection: $filterType) {
-                    ForEach(FilterType.allCases, id: \.self) {
-                        Text($0.rawValue)
+                
+                VStack {
+                    Toggle(isOn: $persistenceController.cloudEnabled) {
+                        Text("Cloud enabled")
                     }
-                } label: {
-                    Text("Type")
-                }.pickerStyle(.segmented)
-
+                    Picker(selection: $filterType) {
+                        ForEach(FilterType.allCases, id: \.self) {
+                            Text($0.name)
+                        }
+                    } label: {
+                        Text("Type")
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }.padding()
+                
                 List {
-                    let itemsByDay = viewModel.itemsByDay(onlyThisDevice: filterType == .thisDevice)
-                    ForEach(itemsByDay, id: \.dateKey) { item in
-                        Section(header: Text("\(item.dateKey)")) {
-                            ForEach(item.items) { value in
-                                NavigationLink {
-                                    DetailView(item: value)
-                                } label: {
-                                    VStack {
-                                        Text(value.timestamp ?? Date(), formatter: itemFormatter)
-                                        Text("\(value.metronomeTime)")
-                                    }
-                                }
+                    ForEach(viewModel.items) { value in
+                        NavigationLink {
+                            DetailView(item: value)
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text(value.timestamp ?? Date(), formatter: itemFormatter)
+                                + Text(": \(Int(value.metronomeTime))min")
                             }
                         }
                     }
-//                    Section(header: Text("My section")) {
-//                        ForEach(viewModel.items) { item in
-//                            NavigationLink {
-//                                Text("Item at \(item.timestamp ?? Date()) \(item.metronomeTime)")
-//                            } label: {
-//                                Text(item.timestamp ?? Date(), formatter: itemFormatter)
-//                            }
-//                        }
-//                        .onDelete(perform: viewModel.deleteItems)
-//                    }
                 }
                 .listStyle(.sidebar)
+                
+                
                 Text("Total time: \(viewModel.totalTime)")
-                Text("Total time (sum): \(viewModel.totalTimeSum)")
-                Text("Total time in last 2 days: \(viewModel.totalTimeInLast2Days)")
+                    .padding()
             }
             
             .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
                 ToolbarItem {
                     Button(action: viewModel.addItem) {
                         Label("Add Item", systemImage: "plus")
                     }
                 }
-                
-                ToolbarItem {
-                    Button(action: {
-                        let yesterdayItem = MetronomeItem(context: viewContext)
-                        
-                        let calendar = Calendar.current
-                        
-                        let yesterday = calendar.date(byAdding: .day, value: -1, to: Date())
-                        
-                        yesterdayItem.timestamp = yesterday
-                        yesterdayItem.metronomeTime = 7.00
-                        
-                        let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: Date())
-                        
-                        let lastWeekItem = MetronomeItem(context: viewContext)
-                        lastWeekItem.timestamp = lastWeek
-                        lastWeekItem.metronomeTime = 22.0
-                        
-                        do {
-                            try viewContext.save()
-                        } catch {
-                            print(error)
-                            fatalError()
-                        }
-                    }) {
-                        Label("Add Fake Items", systemImage: "plus.circle")
-                    }
-                }
             }
+            
+            //Detail view:
             Text("Select an item")
         }.environment(\.managedObjectContext, persistenceController.persistentContainer.viewContext)
     }
 }
-
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
 
 struct DetailView : View {
     @ObservedObject var item : MetronomeItem
@@ -164,3 +114,24 @@ struct DetailView : View {
         }
     }
 }
+
+private enum FilterType : String, CaseIterable {
+    case thisDevice
+    case allDevices
+    
+    var name : String {
+        switch self {
+        case .allDevices:
+            return "All Devices"
+        case .thisDevice:
+            return "This Device"
+        }
+    }
+}
+
+private let itemFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .short
+    formatter.timeStyle = .short
+    return formatter
+}()

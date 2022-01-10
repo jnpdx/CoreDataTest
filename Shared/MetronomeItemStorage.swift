@@ -13,12 +13,9 @@ import WidgetKit
 
 class MetronomeItemStorage : NSObject, ObservableObject {
     @Published var items : [MetronomeItem] = []
-    @Published var totalTimeSum : Float = 0
     
     private let controller : NSFetchedResultsController<MetronomeItem>
     private var context : NSManagedObjectContext
-    
-    private var subscriptions: Set<AnyCancellable> = []
     
     @AppStorage("ItemCreatorID") private var deviceID : String = ""
     
@@ -28,17 +25,6 @@ class MetronomeItemStorage : NSObject, ObservableObject {
         self.context = context
         let fetchRequest = MetronomeItem.fetchRequest()
         let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp, ascending: true)
-        
-        let calendar = Calendar.current
-        
-        let beginRange =
-            calendar.startOfDay(for: calendar.date(byAdding: .day, value: -30, to: Date())!)
-
-        let endRange =
-            calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: Date())!)
-        
-        let predicate = NSPredicate(format: "timestamp > %@ && timestamp < %@", beginRange as NSDate, endRange as NSDate)
-        fetchRequest.predicate = predicate
         fetchRequest.sortDescriptors = [sortByTimestamp]
         controller = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                 managedObjectContext: context,
@@ -65,30 +51,6 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             print(error)
             fatalError()
         }
-        
-        $totalTimeSum.sink { _ in
-            self.updateWidgets()
-        }
-        .store(in: &subscriptions)
-        
-//        NotificationCenter.default
-//            .publisher(for: NSManagedObjectContext.didSaveObjectsNotification)
-//            .sink { change in
-//                print("Save: --", change)
-//                self.updateWidgets()
-//            }
-//            .store(in: &subscriptions)
-//
-//        NotificationCenter.default
-//            .publisher(for: .NSPersistentStoreRemoteChange)
-//            .sink { change in
-//                if let historyToken = change.userInfo?["historyToken"] as? NSPersistentHistoryToken {
-//                    self.historyToken = historyToken.
-//                    print(change.userInfo!)
-//                    self.updateWidgets()
-//                }
-//            }
-//            .store(in: &subscriptions)
     }
     
     func filteredItems(onlyThisDevice: Bool) -> [MetronomeItem] {
@@ -135,66 +97,6 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             partialResult + item.metronomeTime
         }
     }
-    
-    var totalTimeInLast2Days : Float {
-        //TODO: calculate
-        0.0
-    }
-}
-
-extension MetronomeItemStorage {
-    func itemsByDay(onlyThisDevice: Bool) -> [(dateKey: String, items: [MetronomeItem])] {
-        let filteredItems = filteredItems(onlyThisDevice: onlyThisDevice)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM-dd-yyyy"
-        
-        let calendar = Calendar.current
-        let curDate = Date()
-        
-        return (0..<7).reversed().map { day -> (dateKey: String, items: [MetronomeItem]) in
-            let dayStart = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 0 - day, to: curDate)!)
-            var components = DateComponents()
-            components.day = 1
-            components.second = -1
-            let dayEnd = calendar.date(byAdding: components, to: dayStart)!
-            
-            let key = dateFormatter.string(from: dayStart)
-            let dateItems = filteredItems.filter { ($0.timestamp ?? Date()) >= dayStart && ($0.timestamp ?? Date()) <= dayEnd }
-            return (dateKey: key, items: dateItems)
-        }
-    }
-}
-
-extension MetronomeItemStorage {
-    func doSumRequest() {
-        //sum request
-        let sumRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "MetronomeItem")
-        sumRequest.sortDescriptors = [.init(keyPath: \MetronomeItem.timestamp, ascending: true)]
-        sumRequest.resultType = .dictionaryResultType
-        let desc = NSExpressionDescription()
-        desc.name = "sum"
-        desc.expression = NSExpression(forFunction: "sum:", arguments: [NSExpression(forKeyPath: \MetronomeItem.metronomeTime)])
-        desc.expressionResultType = .floatAttributeType
-        sumRequest.propertiesToFetch = [desc]
-        do {
-            let results = try context.fetch(sumRequest)
-            print("RESULTS:")
-            print(results)
-            if let resultMap = results[0] as? [String:NSNumber] {
-                self.totalTimeSum = resultMap["sum"]?.floatValue ?? 0
-            }
-        } catch {
-            print(error)
-            fatalError()
-        }
-    }
-    
-    func newItems(items: [MetronomeItem]) {
-        withAnimation {
-            self.items = items
-        }
-        self.doSumRequest()
-    }
 }
 
 extension MetronomeItemStorage : NSFetchedResultsControllerDelegate {
@@ -202,6 +104,12 @@ extension MetronomeItemStorage : NSFetchedResultsControllerDelegate {
         guard let items = controller.fetchedObjects as? [MetronomeItem] else { return }
         DispatchQueue.main.async {
             self.newItems(items: items)
+        }
+    }
+    
+    private func newItems(items: [MetronomeItem]) {
+        withAnimation {
+            self.items = items
         }
     }
 }
