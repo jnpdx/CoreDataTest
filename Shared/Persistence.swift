@@ -9,7 +9,7 @@ import CoreData
 
 class PersistenceManager : ObservableObject {
     
-    @Published var cloudEnabled = false {
+    @Published var cloudEnabled : Bool {
         didSet {
             persistentContainer = Self.setupContainer(cloudEnabled: cloudEnabled)
             objectWillChange.send()
@@ -18,40 +18,39 @@ class PersistenceManager : ObservableObject {
     
     var persistentContainer: NSPersistentContainer
     
-    init() {
-        persistentContainer = Self.setupContainer(cloudEnabled: false)
+    init(cloud: Bool) {
+        _cloudEnabled = Published(initialValue: cloud)
+        persistentContainer = Self.setupContainer(cloudEnabled: cloud)
     }
     
     static func setupContainer(cloudEnabled: Bool) -> NSPersistentContainer {
         var container : NSPersistentContainer?
         if cloudEnabled {
             print("Generating NSPersistentCloudKitContainer")
-            let cloudContainer = NSPersistentCloudKitContainer(name: "CoreDataTest")
-            container = cloudContainer
-            container?.viewContext.automaticallyMergesChangesFromParent = true
-            
+            container = NSPersistentCloudKitContainer(name: "CoreDataTest", managedObjectModel: try! model(name: "CoreDataTest"))
             let cloudDescription = generateStoreDescription(cloud: true)
+            container?.persistentStoreDescriptions = [cloudDescription]
             
-            container?.persistentStoreDescriptions = [
-                cloudDescription
-            ]
+//#if DEBUG
+//            //on macOS, this has to go before loading the stores, but it causes a console error
+//            //on iOS, it can go after
+//            do {
+//                try (container as? NSPersistentCloudKitContainer)?.initializeCloudKitSchema(options: [])
+//            } catch {
+//                print("CloudKit schema error")
+//                print(error)
+//            }
+//#endif
             
-#if DEBUG
-            do {
-                try cloudContainer.initializeCloudKitSchema(options: [])
-            } catch {
-                print("CloudKit schema error")
-                print(error)
-            }
-#endif
         } else {
             print("Generating NSPersistentContainer")
-            container = NSPersistentContainer(name: "CoreDataTest")
+            container = NSPersistentContainer(name: "CoreDataTest", managedObjectModel: try! model(name: "CoreDataTest"))
             let desc = generateStoreDescription(cloud: false)
             container?.persistentStoreDescriptions = [desc]
         }
         
         container?.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            print("Loaded stores")
             if let error = error as NSError? {
                 /*
                  Typical reasons for an error here include:
@@ -63,7 +62,9 @@ class PersistenceManager : ObservableObject {
                  */
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
+            container?.viewContext.automaticallyMergesChangesFromParent = true
         })
+    
         
         return container!
     }
@@ -77,8 +78,9 @@ class PersistenceManager : ObservableObject {
         if cloud {
             let cloudkitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.johnnastos.CoreDataTest")
             storeDescription.cloudKitContainerOptions = cloudkitOptions
+        } else {
+            storeDescription.cloudKitContainerOptions = nil
         }
-        
         storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         return storeDescription
@@ -90,6 +92,26 @@ class PersistenceManager : ObservableObject {
         }
         
         return fileContainer.appendingPathComponent("\(databaseName).sqlite")
+    }
+}
+
+extension PersistenceManager {
+    private static var _model: NSManagedObjectModel?
+    private static func model(name: String) throws -> NSManagedObjectModel {
+        if _model == nil {
+            _model = try loadModel(name: name, bundle: Bundle.main)
+        }
+        return _model!
+    }
+    private static func loadModel(name: String, bundle: Bundle) throws -> NSManagedObjectModel {
+        guard let modelURL = bundle.url(forResource: name, withExtension: "momd") else {
+            fatalError()
+        }
+
+        guard let model = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError()
+       }
+        return model
     }
 }
 

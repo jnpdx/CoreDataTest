@@ -71,6 +71,7 @@ struct ContentView: View {
 //                        .onDelete(perform: viewModel.deleteItems)
 //                    }
                 }
+                .listStyle(.sidebar)
                 Text("Total time: \(viewModel.totalTime)")
                 Text("Total time (sum): \(viewModel.totalTimeSum)")
                 Text("Total time in last 2 days: \(viewModel.totalTimeInLast2Days)")
