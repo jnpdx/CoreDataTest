@@ -26,7 +26,6 @@
 /* Begin PBXFileReference section */
 		D25D6E212769D9C600323F7A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D25D6E232769D9C600323F7A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		D25D6E342769DC6D00323F7A /* CoreDataWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CoreDataWidgetExtension.entitlements; sourceTree = "<group>"; };
 		D2806F6B2782842700E002A9 /* MetronomeItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetronomeItemStorage.swift; sourceTree = "<group>"; };
 		D2ACB52C276970B0002CF461 /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
 		D2ACB52D276970B0002CF461 /* CoreDataTestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestApp.swift; sourceTree = "<group>"; };
@@ -65,7 +64,6 @@
 		D2ACB525276970B0002CF461 = {
 			isa = PBXGroup;
 			children = (
-				D25D6E342769DC6D00323F7A /* CoreDataWidgetExtension.entitlements */,
 				D2ACB5542769CB45002CF461 /* CoreDataTest--iOS--Info.plist */,
 				D2ACB5502769CA49002CF461 /* CoreDataTest (iOS).entitlements */,
 				D2ACB52A276970B0002CF461 /* Shared */,
