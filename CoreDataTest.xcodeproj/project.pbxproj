@@ -7,14 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D25D6E222769D9C600323F7A /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25D6E212769D9C600323F7A /* WidgetKit.framework */; platformFilter = maccatalyst; };
-		D25D6E242769D9C600323F7A /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25D6E232769D9C600323F7A /* SwiftUI.framework */; platformFilter = maccatalyst; };
-		D25D6E272769D9C600323F7A /* CoreDataWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25D6E262769D9C600323F7A /* CoreDataWidget.swift */; };
-		D25D6E292769D9C700323F7A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D25D6E282769D9C700323F7A /* Assets.xcassets */; };
-		D25D6E2D2769D9C700323F7A /* CoreDataWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D25D6E202769D9C600323F7A /* CoreDataWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		D25D6E322769D9D700323F7A /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2ACB52F276970B0002CF461 /* Persistence.swift */; };
-		D25D6E332769D9E200323F7A /* CoreDataTest.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D2ACB52B276970B0002CF461 /* CoreDataTest.xcdatamodeld */; };
-		D25D6E352769DC7D00323F7A /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2ACB5522769CA4D002CF461 /* CloudKit.framework */; };
 		D2806F6C2782842700E002A9 /* MetronomeItemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2806F6B2782842700E002A9 /* MetronomeItemStorage.swift */; };
 		D2806F6D2782842700E002A9 /* MetronomeItemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2806F6B2782842700E002A9 /* MetronomeItemStorage.swift */; };
 		D2ACB53E276970B2002CF461 /* CoreDataTest.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D2ACB52B276970B0002CF461 /* CoreDataTest.xcdatamodeld */; };
@@ -31,37 +23,9 @@
 		D2ACB5562769CBD5002CF461 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2ACB5552769CBD5002CF461 /* CloudKit.framework */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		D25D6E2B2769D9C700323F7A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D2ACB526276970B0002CF461 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D25D6E1F2769D9C600323F7A;
-			remoteInfo = CoreDataWidgetExtension;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		D25D6E312769D9C700323F7A /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				D25D6E2D2769D9C700323F7A /* CoreDataWidgetExtension.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
-		D25D6E202769D9C600323F7A /* CoreDataWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CoreDataWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D25D6E212769D9C600323F7A /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D25D6E232769D9C600323F7A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		D25D6E262769D9C600323F7A /* CoreDataWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataWidget.swift; sourceTree = "<group>"; };
-		D25D6E282769D9C700323F7A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D25D6E2A2769D9C700323F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D25D6E342769DC6D00323F7A /* CoreDataWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CoreDataWidgetExtension.entitlements; sourceTree = "<group>"; };
 		D2806F6B2782842700E002A9 /* MetronomeItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetronomeItemStorage.swift; sourceTree = "<group>"; };
 		D2ACB52C276970B0002CF461 /* Shared.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Shared.xcdatamodel; sourceTree = "<group>"; };
@@ -79,16 +43,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D25D6E1D2769D9C600323F7A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D25D6E352769DC7D00323F7A /* CloudKit.framework in Frameworks */,
-				D25D6E242769D9C600323F7A /* SwiftUI.framework in Frameworks */,
-				D25D6E222769D9C600323F7A /* WidgetKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2ACB532276970B2002CF461 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -108,16 +62,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D25D6E252769D9C600323F7A /* CoreDataWidget */ = {
-			isa = PBXGroup;
-			children = (
-				D25D6E262769D9C600323F7A /* CoreDataWidget.swift */,
-				D25D6E282769D9C700323F7A /* Assets.xcassets */,
-				D25D6E2A2769D9C700323F7A /* Info.plist */,
-			);
-			path = CoreDataWidget;
-			sourceTree = "<group>";
-		};
 		D2ACB525276970B0002CF461 = {
 			isa = PBXGroup;
 			children = (
@@ -126,7 +70,6 @@
 				D2ACB5502769CA49002CF461 /* CoreDataTest (iOS).entitlements */,
 				D2ACB52A276970B0002CF461 /* Shared */,
 				D2ACB53C276970B2002CF461 /* macOS */,
-				D25D6E252769D9C600323F7A /* CoreDataWidget */,
 				D2ACB536276970B2002CF461 /* Products */,
 				D2ACB5512769CA4D002CF461 /* Frameworks */,
 			);
@@ -150,7 +93,6 @@
 			children = (
 				D2ACB535276970B2002CF461 /* CoreDataTest.app */,
 				D2ACB53B276970B2002CF461 /* CoreDataTest.app */,
-				D25D6E202769D9C600323F7A /* CoreDataWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,23 +119,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D25D6E1F2769D9C600323F7A /* CoreDataWidgetExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D25D6E2E2769D9C700323F7A /* Build configuration list for PBXNativeTarget "CoreDataWidgetExtension" */;
-			buildPhases = (
-				D25D6E1C2769D9C600323F7A /* Sources */,
-				D25D6E1D2769D9C600323F7A /* Frameworks */,
-				D25D6E1E2769D9C600323F7A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = CoreDataWidgetExtension;
-			productName = CoreDataWidgetExtension;
-			productReference = D25D6E202769D9C600323F7A /* CoreDataWidgetExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		D2ACB534276970B2002CF461 /* CoreDataTest (iOS) */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D2ACB54A276970B2002CF461 /* Build configuration list for PBXNativeTarget "CoreDataTest (iOS)" */;
@@ -201,12 +126,10 @@
 				D2ACB531276970B2002CF461 /* Sources */,
 				D2ACB532276970B2002CF461 /* Frameworks */,
 				D2ACB533276970B2002CF461 /* Resources */,
-				D25D6E312769D9C700323F7A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D25D6E2C2769D9C700323F7A /* PBXTargetDependency */,
 			);
 			name = "CoreDataTest (iOS)";
 			productName = "CoreDataTest (iOS)";
@@ -240,9 +163,6 @@
 				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1310;
 				TargetAttributes = {
-					D25D6E1F2769D9C600323F7A = {
-						CreatedOnToolsVersion = 13.1;
-					};
 					D2ACB534276970B2002CF461 = {
 						CreatedOnToolsVersion = 13.1;
 					};
@@ -266,20 +186,11 @@
 			targets = (
 				D2ACB534276970B2002CF461 /* CoreDataTest (iOS) */,
 				D2ACB53A276970B2002CF461 /* CoreDataTest (macOS) */,
-				D25D6E1F2769D9C600323F7A /* CoreDataWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D25D6E1E2769D9C600323F7A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D25D6E292769D9C700323F7A /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2ACB533276970B2002CF461 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -299,16 +210,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D25D6E1C2769D9C600323F7A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D25D6E272769D9C600323F7A /* CoreDataWidget.swift in Sources */,
-				D25D6E332769D9E200323F7A /* CoreDataTest.xcdatamodeld in Sources */,
-				D25D6E322769D9D700323F7A /* Persistence.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D2ACB531276970B2002CF461 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -335,78 +236,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		D25D6E2C2769D9C700323F7A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D25D6E1F2769D9C600323F7A /* CoreDataWidgetExtension */;
-			targetProxy = D25D6E2B2769D9C700323F7A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		D25D6E2F2769D9C700323F7A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = CoreDataWidgetExtension.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = PU59A74F57;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CoreDataWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CoreDataWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.johnnastos.CoreDataTest.CoreDataWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		D25D6E302769D9C700323F7A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = CoreDataWidgetExtension.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = PU59A74F57;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = CoreDataWidget/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CoreDataWidget;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.johnnastos.CoreDataTest.CoreDataWidget;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 		D2ACB548276970B2002CF461 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -521,7 +351,6 @@
 		D2ACB54B276970B2002CF461 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "CoreDataTest (iOS).entitlements";
@@ -538,6 +367,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -547,6 +377,8 @@
 				PRODUCT_NAME = CoreDataTest;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -556,7 +388,6 @@
 		D2ACB54C276970B2002CF461 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "CoreDataTest (iOS).entitlements";
@@ -573,6 +404,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -582,6 +414,8 @@
 				PRODUCT_NAME = CoreDataTest;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -648,15 +482,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D25D6E2E2769D9C700323F7A /* Build configuration list for PBXNativeTarget "CoreDataWidgetExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D25D6E2F2769D9C700323F7A /* Debug */,
-				D25D6E302769D9C700323F7A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		D2ACB529276970B0002CF461 /* Build configuration list for PBXProject "CoreDataTest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

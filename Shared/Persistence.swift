@@ -12,7 +12,7 @@ class PersistenceManager : ObservableObject {
     @Published var cloudEnabled : Bool {
         didSet {
             persistentContainer = Self.setupContainer(cloudEnabled: cloudEnabled)
-            objectWillChange.send()
+            objectWillChange.send() //use this to have the view hierarchy update and create new references to the new persistentContainer
         }
     }
     
@@ -24,49 +24,41 @@ class PersistenceManager : ObservableObject {
     }
     
     static func setupContainer(cloudEnabled: Bool) -> NSPersistentContainer {
-        var container : NSPersistentContainer?
+        var container : NSPersistentContainer
         if cloudEnabled {
             print("Generating NSPersistentCloudKitContainer")
             container = NSPersistentCloudKitContainer(name: "CoreDataTest", managedObjectModel: try! model(name: "CoreDataTest"))
             let cloudDescription = generateStoreDescription(cloud: true)
-            container?.persistentStoreDescriptions = [cloudDescription]
+            container.persistentStoreDescriptions = [cloudDescription]
             
-//#if DEBUG
-//            //on macOS, this has to go before loading the stores, but it causes a console error
-//            //on iOS, it can go after
-//            do {
-//                try (container as? NSPersistentCloudKitContainer)?.initializeCloudKitSchema(options: [])
-//            } catch {
-//                print("CloudKit schema error")
-//                print(error)
-//            }
-//#endif
+#if DEBUG
+            //on macOS, this has to go before loading the stores, but it causes a console error
+            //on iOS, it can (should?) go after
+            do {
+                try (container as? NSPersistentCloudKitContainer)?.initializeCloudKitSchema(options: [])
+            } catch {
+                print("CloudKit schema error")
+                print(error)
+            }
+#endif
             
         } else {
             print("Generating NSPersistentContainer")
             container = NSPersistentContainer(name: "CoreDataTest", managedObjectModel: try! model(name: "CoreDataTest"))
             let desc = generateStoreDescription(cloud: false)
-            container?.persistentStoreDescriptions = [desc]
+            container.persistentStoreDescriptions = [desc]
         }
         
-        container?.loadPersistentStores(completionHandler: { (storeDescription, error) in
+        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             print("Loaded stores")
             if let error = error as NSError? {
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
-            container?.viewContext.automaticallyMergesChangesFromParent = true
+            container.viewContext.automaticallyMergesChangesFromParent = true
         })
     
         
-        return container!
+        return container
     }
     
     static func generateStoreDescription(cloud: Bool) -> NSPersistentStoreDescription {
@@ -95,6 +87,8 @@ class PersistenceManager : ObservableObject {
     }
 }
 
+//Have to use this strategy when recreating NSPersistentContainer or else
+//there will be warnings about multiple instances owning the Core Data models
 extension PersistenceManager {
     private static var _model: NSManagedObjectModel?
     private static func model(name: String) throws -> NSManagedObjectModel {
@@ -112,126 +106,5 @@ extension PersistenceManager {
             fatalError()
        }
         return model
-    }
-}
-
-struct _PersistenceController {
-    var cloudEnabled : Bool = true {
-        didSet {
-            print("SETTING CLOUDENABLED")
-            initializeContainer(inMemory: false, inCloud: cloudEnabled)
-        }
-    }
-    var container: NSPersistentContainer = NSPersistentCloudKitContainer(name: "CoreDataTest")
-    
-    func generateNonCloudStoreDescription() -> NSPersistentStoreDescription {
-        let storeURL = Self.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest-Cloud")
-        print("StoreURL: ",storeURL)
-        let storeDescription = NSPersistentStoreDescription(url: storeURL)
-        storeDescription.configuration = "Cloud"
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        return storeDescription
-    }
-    
-    func generateCloudStoreDescription() -> NSPersistentStoreDescription {
-        let storeURL = Self.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest-Cloud")
-        print("StoreURL: ",storeURL)
-        let storeDescription = NSPersistentStoreDescription(url: storeURL)
-        storeDescription.configuration = "Cloud"
-        let cloudkitOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: "iCloud.com.johnnastos.CoreDataTest")
-        storeDescription.cloudKitContainerOptions = cloudkitOptions
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        return storeDescription
-    }
-    
-    ///Probably don't use this, as we can't share entities between two stores
-    func generateLocalStoreDescription() -> NSPersistentStoreDescription {
-        let storeURL = Self.storeURL(for: "group.com.johnnastos.CoreDataTest", databaseName: "CoreDataTest-Cloud")
-        print("StoreURL (local): ",storeURL)
-        let storeDescription = NSPersistentStoreDescription(url: storeURL)
-        storeDescription.cloudKitContainerOptions = nil
-        storeDescription.configuration = "Cloud"
-        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        return storeDescription
-    }
-    
-    mutating func initializeContainer(inMemory: Bool, inCloud: Bool) {
-        if inCloud {
-            let cloudContainer = NSPersistentCloudKitContainer(name: "CoreDataTest")
-            container = cloudContainer
-            container.viewContext.automaticallyMergesChangesFromParent = true
-            
-            let cloudDescription = generateCloudStoreDescription()
-            
-            container.persistentStoreDescriptions = [
-                cloudDescription,
-                //localDescription
-            ]
-            
-#if DEBUG
-            do {
-                try cloudContainer.initializeCloudKitSchema(options: [])
-            } catch {
-                print("CloudKit schema error")
-                print(error)
-            }
-#endif
-        } else {
-            container = NSPersistentContainer(name: "CoreDataTest")
-            let desc = generateLocalStoreDescription()
-            container.persistentStoreDescriptions = [desc]
-        }
-        
-        if inMemory {
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
-        }
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-    }
-    
-    init(inMemory: Bool = false) {
-        initializeContainer(inMemory: inMemory, inCloud: true)
-    }
-}
-
-extension _PersistenceController {
-    static var preview: _PersistenceController = {
-        let result = _PersistenceController(inMemory: true)
-        let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = MetronomeItem(context: viewContext)
-            newItem.timestamp = Date()
-        }
-        do {
-            try viewContext.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        return result
-    }()
-}
-
-extension _PersistenceController {
-    /// Returns a URL for the given app group and database pointing to the sqlite database.
-    static func storeURL(for appGroup: String, databaseName: String) -> URL {
-        guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else {
-            fatalError("Shared file container could not be created.")
-        }
-        
-        return fileContainer.appendingPathComponent("\(databaseName).sqlite")
     }
 }

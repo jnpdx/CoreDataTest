@@ -9,7 +9,6 @@ import Foundation
 import Combine
 import CoreData
 import SwiftUI
-import WidgetKit
 
 class MetronomeItemStorage : NSObject, ObservableObject {
     @Published var items : [MetronomeItem] = []
@@ -24,7 +23,8 @@ class MetronomeItemStorage : NSObject, ObservableObject {
         
         self.context = context
         let fetchRequest = MetronomeItem.fetchRequest()
-        let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp, ascending: true)
+        let sortByTimestamp = NSSortDescriptor(keyPath: \MetronomeItem.timestamp,
+                                               ascending: true)
         fetchRequest.sortDescriptors = [sortByTimestamp]
         controller = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                 managedObjectContext: context,
@@ -60,16 +60,11 @@ class MetronomeItemStorage : NSObject, ObservableObject {
             items
     }
     
-    func updateWidgets() {
-        print("Updating widget...")
-        WidgetCenter.shared.reloadTimelines(ofKind: "CoreDataWidget")
-    }
-    
     func addItem() {
         print("Adding item in:",context)
         let newItem = MetronomeItem(context: context)
         newItem.timestamp = Date()
-        newItem.metronomeTime = 5.0
+        newItem.metronomeTime = Float(Int.random(in: 1...10))
         newItem.creator = UUID(uuidString: deviceID)
         
         do {

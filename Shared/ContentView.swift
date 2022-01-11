@@ -8,7 +8,6 @@
 import SwiftUI
 import CoreData
 import Combine
-import WidgetKit
 
 struct ContentView: View {
     @ObservedObject private var viewModel : MetronomeItemStorage
